@@ -6,6 +6,17 @@ from .reference_finder import find_references
 from .text_processing import classify_claim_type, extract_claim_candidates, extract_topic
 
 
+EVIDENCE_PATTERN = re.compile(
+    r"\b(according to|data|study|report|source|document|records|official statement)\b",
+    re.IGNORECASE,
+)
+VAGUE_PATTERN = re.compile(
+    r"\b(many|some|experts say|people say|obviously|clearly|everyone knows)\b",
+    re.IGNORECASE,
+)
+SPECIFIC_PATTERN = re.compile(
+    r"(\b\d{1,4}(?:\.\d+)?%?\b|\b\d{4}\b|\b(january|february|march|april|may|june|"
+    r"july|august|september|october|november|december)\b|\b(according to|in [A-Z][a-z]+|at [A-Z][a-z]+))",
 EVIDENCE_PATTERN = re.compile(r"\b(according to|data|study|report|source|document|records|official statement)\b", re.IGNORECASE)
 VAGUE_PATTERN = re.compile(r"\b(many|some|experts say|people say|obviously|clearly|everyone knows)\b", re.IGNORECASE)
 SPECIFIC_PATTERN = re.compile(
@@ -108,6 +119,13 @@ def compute_scores(claims: List[ClaimAssessment], manipulation_findings: List[st
         intent_penalty = 12
 
     objectivity = max(5, min(100, 100 - manipulation_penalty - intent_penalty))
+    propaganda = int(
+        min(
+            95,
+            (100 - objectivity) * 0.74
+            + (18 if intent_label in {"Political influence", "Reputation improvement (PR)"} else 8),
+        )
+    )
     propaganda = int(min(95, (100 - objectivity) * 0.74 + (18 if intent_label in {"Political influence", "Reputation improvement (PR)"} else 8)))
 
     return {
@@ -118,6 +136,10 @@ def compute_scores(claims: List[ClaimAssessment], manipulation_findings: List[st
 
 
 def determine_final_assessment(scores: Dict[str, int], intent_label: str) -> str:
+    # Use intent-aware thresholds while avoiding over-triggering on single weak cues.
+    if intent_label == "Political influence" and scores["propaganda"] >= 35:
+        return "Likely propaganda"
+    if intent_label == "Reputation improvement (PR)" and scores["propaganda"] >= 25:
     # Prioritize directional-intent detection before defaulting to factual.
     if intent_label == "Political influence" and (scores["propaganda"] >= 45 or scores["objectivity"] < 95):
         return "Likely propaganda"

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>News Intelligence Analyzer — Sample HTML Preview</title>
+  <style>
+    :root {
+      --bg1: #ff1e1e;
+      --bg2: #ff4d4d;
+      --bg3: #ff9c9c;
+      --panel: rgba(255,255,255,.9);
+      --text: #3f0000;
+      --ok: #15b55b;
+      --med: #ffc107;
+      --bad: #ff3b30;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 15% 20%, var(--bg1) 0%, var(--bg2) 30%, var(--bg3) 58%, #ffe2e2 82%, #fff 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .flower {
+      position: fixed;
+      top: -10%;
+      opacity: .7;
+      animation: fall linear infinite, sway ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes fall { from { transform: translateY(-10vh) rotate(0deg);} to { transform: translateY(120vh) rotate(360deg);} }
+    @keyframes sway { 0%,100% { margin-left:0;} 50% { margin-left: 40px;} }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 28px 20px 40px; position: relative; z-index: 2; }
+    .title { text-align:center; font-weight: 900; font-size: 3rem; margin-bottom: 4px; text-shadow: 0 2px 12px rgba(255,255,255,.45); }
+    .sub { text-align:center; font-size:1.1rem; margin-bottom: 20px; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.7);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(100,0,0,.16);
+      margin-bottom: 14px;
+    }
+    .grid { display:grid; grid-template-columns: 1.3fr 1fr; gap: 14px; }
+    .kpis { display:grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    .kpi { background: #fff; border-radius: 12px; padding: 10px; border: 1px solid #eee; }
+    .bar { height: 14px; border-radius: 999px; background: #eee; overflow: hidden; margin-bottom: 8px; }
+    .fill { height: 14px; }
+    .tabs { display:grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 10px; }
+    .tab { background: #fff; border:1px solid #f0dede; padding:8px; border-radius:10px; text-align:center; font-weight:600; }
+    .claim { border-left: 4px solid #ff4d4d; padding-left: 10px; margin-bottom: 10px; }
+    .small { font-size: .92rem; opacity:.9; }
+    a { color: #a10000; }
+  </style>
+</head>
+<body>
+  <script>
+    for (let i = 0; i < 38; i++) {
+      const el = document.createElement('div');
+      el.className = 'flower';
+      el.textContent = '🌸';
+      el.style.left = ((i * 2.6) % 100) + '%';
+      el.style.fontSize = (14 + (i % 6) * 6) + 'px';
+      const d = 8 + (i % 8);
+      const delay = (i * 0.32) % 8;
+      el.style.animationDuration = `${d}s, ${Math.max(4, d/2)}s`;
+      el.style.animationDelay = `${delay}s, ${delay/2}s`;
+      document.body.appendChild(el);
+    }
+  </script>
+
+  <div class="wrap">
+    <div class="title">News Intelligence Analyzer</div>
+    <div class="sub">AI Narrative Investigation System — Sample HTML Preview</div>
+
+    <div class="panel">
+      <strong>Input (sample):</strong>
+      <p class="small">"Government confirmed alien contact in 2024 according to leaked report from Nevada."</p>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <h3>Summary</h3>
+        <p>Topic extracted: <strong>alien contact nevada 2024</strong>. Claims were extracted, cross-reference candidates were generated, and intent/manipulation signals were assessed before final conclusion.</p>
+      </div>
+      <div class="panel">
+        <h3>Scoreboard</h3>
+        <div>Objectivity 62/100</div>
+        <div class="bar"><div class="fill" style="width:62%;background:var(--med)"></div></div>
+        <div>Reliability 48/100</div>
+        <div class="bar"><div class="fill" style="width:48%;background:var(--med)"></div></div>
+        <div>PR/Propaganda Probability 67/100</div>
+        <div class="bar"><div class="fill" style="width:67%;background:var(--bad)"></div></div>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><strong>Objectivity Risk:</strong> Medium</div>
+      <div class="kpi"><strong>Reliability Risk:</strong> Medium</div>
+      <div class="kpi"><strong>PR/Propaganda Risk:</strong> High</div>
+    </div>
+
+    <div class="panel">
+      <div class="tabs">
+        <div class="tab">Extracted Claims</div>
+        <div class="tab">Reference Findings</div>
+        <div class="tab">Intent & Manipulation</div>
+        <div class="tab">Further Questions</div>
+      </div>
+
+      <h3>Extracted Claims</h3>
+      <div class="claim">
+        <strong>Claim 1:</strong> Government confirmed alien contact in 2024 according to leaked report from Nevada.<br/>
+        <span class="small">Type: Evidence-backed factual | Specificity: Specific | Evidence: Cues present | Verifiability: Medium</span>
+      </div>
+
+      <h3>Reference Findings</h3>
+      <ul>
+        <li><strong>Wikipedia:</strong> UFO / Extraterrestrial hypothesis articles</li>
+        <li><strong>Crossref:</strong> Academic papers on astrobiology and signal verification</li>
+        <li><strong>Alternative:</strong> OSINT discussion threads + independent analyses</li>
+      </ul>
+
+      <h3>Likely Intent</h3>
+      <p>Political influence (possible narrative-shaping around institutions).</p>
+
+      <h3>Final Assessment</h3>
+      <p><strong>Likely propaganda</strong></p>
+
+      <h3>Further Investigation Questions</h3>
+      <ol>
+        <li>What primary evidence confirms official authentication of the report?</li>
+        <li>Which independent scientific organizations corroborate this claim?</li>
+        <li>Who benefits if this narrative spreads before evidence is verified?</li>
+      </ol>
+    </div>
+
+    <div class="panel small">
+      Static preview page for GitHub/Docs. For live analysis, run <code>streamlit run app.py</code>.
+    </div>
+  </div>
+</body>
+</html>

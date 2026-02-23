@@ -30,6 +30,29 @@ def inject_theme() -> None:
         """
         <style>
         .stApp {
+            background: radial-gradient(circle at 15% 20%, #ff1e1e 0%, #ff4545 28%, #ff7f7f 55%, #ffd5d5 78%, #ffffff 100%);
+        }
+        .block-container {
+            max-width: 1120px;
+            padding-top: 1.4rem;
+            padding-bottom: 2.8rem;
+        }
+        .main-title {
+            text-align:center; font-size: 3.3rem; font-weight: 900;
+            color: #4d0000; text-shadow: 0 3px 14px rgba(255,255,255,.45);
+            letter-spacing: .6px;
+        }
+        .subtitle {
+            text-align:center; font-size: 1.2rem; color: #7a0e0e;
+            margin-bottom: 1rem; font-weight: 650;
+        }
+        .panel {
+            background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(255,255,255,.86));
+            border: 1px solid rgba(255,255,255,0.68);
+            border-radius: 20px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 12px 34px rgba(110,0,0,.16);
             background: radial-gradient(circle at 15% 20%, #ff2b2b 0%, #ff4d4d 28%, #ff8a8a 55%, #ffd6d6 78%, #ffffff 100%);
         }
         .block-container {
@@ -60,6 +83,11 @@ def inject_theme() -> None:
             top: -12%;
             z-index: 0;
             pointer-events: none;
+            opacity: 0.70;
+            animation-name: fall, dance;
+            animation-timing-function: linear, ease-in-out;
+            animation-iteration-count: infinite, infinite;
+            filter: saturate(1.5);
             opacity: 0.68;
             animation-name: fall, dance;
             animation-timing-function: linear, ease-in-out;
@@ -72,12 +100,16 @@ def inject_theme() -> None:
         }
         @keyframes dance {
             0%, 100% { margin-left: 0; }
+            50% { margin-left: 52px; }
             50% { margin-left: 46px; }
         }
         .kpi {
             border-radius: 14px;
             padding: .65rem .85rem;
             border: 1px solid rgba(0,0,0,.08);
+            background: rgba(255,255,255,.84);
+            margin-bottom: .6rem;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
             background: rgba(255,255,255,.76);
             margin-bottom: .5rem;
         }
@@ -87,6 +119,14 @@ def inject_theme() -> None:
     )
 
     flowers = ""
+    for i in range(40):
+        left = (i * 2.5) % 100
+        delay = (i * 0.33) % 10
+        duration = 8 + (i % 9)
+        size = 14 + (i % 7) * 6
+        flowers += (
+            f"<div class='flower' style='left:{left}%;font-size:{size}px;"
+            f"animation-duration:{duration}s,{duration/2.0}s;animation-delay:{delay}s,{delay/2}s;'>🌸</div>"
     for i in range(36):
         left = (i * 2.8) % 100
         delay = (i * 0.36) % 11
@@ -134,6 +174,62 @@ def render_report(result: AnalysisResult) -> None:
     c2.markdown(f"<div class='kpi'><strong>Reliability Risk:</strong> {_risk_label(result.reliability_score)}</div>", unsafe_allow_html=True)
     c3.markdown(f"<div class='kpi'><strong>PR/Propaganda Risk:</strong> {_risk_label(result.propaganda_probability, inverse=True)}</div>", unsafe_allow_html=True)
 
+    tab_claims, tab_refs, tab_analysis, tab_questions = st.tabs([
+        "Extracted Claims",
+        "Reference Findings",
+        "Intent & Manipulation",
+        "Further Questions",
+    ])
+
+    with tab_claims:
+        st.markdown("<div class='panel'>", unsafe_allow_html=True)
+        st.markdown("### EXTRACTED CLAIMS")
+        for idx, claim in enumerate(result.claims, start=1):
+            st.markdown(f"**Claim {idx}:** {claim.claim}")
+            st.caption(
+                f"Type: {claim.claim_type} | Specificity: {claim.specificity} | "
+                f"Evidence: {claim.evidence_status} | Verifiability: {claim.verifiability}"
+            )
+            st.write(claim.rationale)
+            st.divider()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with tab_refs:
+        st.markdown("<div class='panel'>", unsafe_allow_html=True)
+        st.markdown("### REFERENCE FINDINGS")
+        st.caption("Mainstream, non-mainstream, obscure, and alternative viewpoints for triangulation.")
+        for ref in result.references:
+            st.markdown(f"**{ref.title}**")
+            st.write(f"Source: {ref.source} | Viewpoint: {ref.viewpoint}")
+            st.write(ref.summary)
+            if ref.link:
+                st.markdown(f"[Open source link]({ref.link})")
+            st.divider()
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with tab_analysis:
+        st.markdown("<div class='panel'>", unsafe_allow_html=True)
+        st.markdown("### LIKELY INTENT")
+        st.write(f"**{result.intent_label}**")
+        st.write(result.intent_reason)
+
+        st.markdown("### MANIPULATION RISK")
+        for finding in result.manipulation_findings:
+            st.write(f"- {finding}")
+
+        st.markdown("### FINAL ASSESSMENT")
+        st.write(f"**{result.final_assessment}**")
+
+        st.markdown("### REASONING")
+        st.write(result.reasoning)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with tab_questions:
+        st.markdown("<div class='panel'>", unsafe_allow_html=True)
+        st.markdown("### Further Investigation Questions")
+        for question in result.follow_up_questions:
+            st.write(f"- {question}")
+        st.markdown("</div>", unsafe_allow_html=True)
     st.markdown("<div class='panel'>", unsafe_allow_html=True)
     st.markdown("### EXTRACTED CLAIMS")
     for idx, claim in enumerate(result.claims, start=1):

@@ -4,10 +4,15 @@ import urllib.parse
 import urllib.request
 from functools import lru_cache
 from typing import List
+from urllib.error import HTTPError, URLError
 
 from .models import ReferenceArticle
 
 
+USER_AGENT = "News-Intelligence-Analyzer/1.2"
+
+
+def _fetch_json(url: str, timeout: int = 8) -> dict:
 USER_AGENT = "News-Intelligence-Analyzer/1.1"
 
 
@@ -36,6 +41,7 @@ def fetch_wikipedia(topic: str) -> List[ReferenceArticle]:
                     viewpoint="Mainstream/reference",
                 )
             )
+    except (HTTPError, URLError, TimeoutError, json.JSONDecodeError):
     except Exception:
         return []
     return refs
@@ -61,6 +67,7 @@ def fetch_crossref(topic: str) -> List[ReferenceArticle]:
                     viewpoint="Academic/independent",
                 )
             )
+    except (HTTPError, URLError, TimeoutError, json.JSONDecodeError):
     except Exception:
         return []
     return refs
@@ -72,6 +79,7 @@ def generate_non_mainstream(topic: str) -> List[ReferenceArticle]:
             title=f"Independent analyses on {topic}",
             source="Independent newsletters and investigative blogs",
             summary="Check whether authors provide raw evidence, primary sources, and transparent methodology.",
+            link=f"https://duckduckgo.com/?q={urllib.parse.quote(topic + ' independent analysis')}",
             link="",
             viewpoint="Alternative viewpoint",
         ),
@@ -79,6 +87,7 @@ def generate_non_mainstream(topic: str) -> List[ReferenceArticle]:
             title=f"OSINT discussion threads about {topic}",
             source="Open-source intelligence communities",
             summary="Useful for chronology checks, geolocation, and media provenance verification.",
+            link=f"https://duckduckgo.com/?q={urllib.parse.quote(topic + ' osint discussion')}",
             link="",
             viewpoint="Obscure/OSINT",
         ),
@@ -86,12 +95,38 @@ def generate_non_mainstream(topic: str) -> List[ReferenceArticle]:
             title=f"Contrarian commentary clusters: {topic}",
             source="Niche forums and alternative media",
             summary="Use only with corroboration; identify where claims diverge from mainstream or primary-source evidence.",
+            link=f"https://duckduckgo.com/?q={urllib.parse.quote(topic + ' alternative viewpoint')}",
             link="",
             viewpoint="Non-mainstream/contrarian",
         ),
     ]
 
 
+def _offline_fallback(topic: str) -> List[ReferenceArticle]:
+    return [
+        ReferenceArticle(
+            title=f"Mainstream coverage index: {topic}",
+            source="News search",
+            summary="Fallback index for mainstream reporting when APIs are unavailable.",
+            link=f"https://duckduckgo.com/?q={urllib.parse.quote(topic + ' site:reuters.com OR site:apnews.com OR site:bbc.com')}",
+            viewpoint="Mainstream/reference",
+        ),
+        ReferenceArticle(
+            title=f"Academic index: {topic}",
+            source="Google Scholar",
+            summary="Fallback academic search index when Crossref access is unavailable.",
+            link=f"https://scholar.google.com/scholar?q={urllib.parse.quote(topic)}",
+            viewpoint="Academic/independent",
+        ),
+    ]
+
+
+def find_references(topic: str) -> List[ReferenceArticle]:
+    wiki_refs = fetch_wikipedia(topic)
+    crossref_refs = fetch_crossref(topic)
+    refs = wiki_refs + crossref_refs + generate_non_mainstream(topic)
+    if not wiki_refs and not crossref_refs:
+        refs.extend(_offline_fallback(topic))
 def find_references(topic: str) -> List[ReferenceArticle]:
     refs = fetch_wikipedia(topic) + fetch_crossref(topic) + generate_non_mainstream(topic)
 
