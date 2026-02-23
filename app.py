@@ -7,6 +7,7 @@ from src.news_intel.ui import inject_theme, render_report
 
 def main() -> None:
     st.set_page_config(page_title="News Intelligence Analyzer", layout="wide", page_icon="🧠")
+    st.set_page_config(page_title="News Intelligence Analyzer", layout="wide")
     inject_theme()
 
     st.markdown("<div class='main-title'>News Intelligence Analyzer</div>", unsafe_allow_html=True)
@@ -43,6 +44,16 @@ def main() -> None:
         with st.spinner("Investigating claims, references, and narrative signals..."):
             result = analyze_text(normalize_text(user_input))
 
+    user_input = st.text_area(
+        "Enter news text or an investigation question",
+        height=240,
+        placeholder="Paste news text or enter a topic/question such as: Do aliens exist?",
+    )
+    analyze_clicked = st.button("🔎 Analyze", use_container_width=True, type="primary")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    if analyze_clicked and user_input.strip():
+        result = analyze_text(normalize_text(user_input))
         render_report(result)
 
 

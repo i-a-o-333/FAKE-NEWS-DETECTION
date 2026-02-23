@@ -13,6 +13,10 @@ USER_AGENT = "News-Intelligence-Analyzer/1.2"
 
 
 def _fetch_json(url: str, timeout: int = 8) -> dict:
+USER_AGENT = "News-Intelligence-Analyzer/1.1"
+
+
+def _fetch_json(url: str, timeout: int = 10) -> dict:
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return json.loads(resp.read().decode("utf-8"))
@@ -38,6 +42,7 @@ def fetch_wikipedia(topic: str) -> List[ReferenceArticle]:
                 )
             )
     except (HTTPError, URLError, TimeoutError, json.JSONDecodeError):
+    except Exception:
         return []
     return refs
 
@@ -63,6 +68,7 @@ def fetch_crossref(topic: str) -> List[ReferenceArticle]:
                 )
             )
     except (HTTPError, URLError, TimeoutError, json.JSONDecodeError):
+    except Exception:
         return []
     return refs
 
@@ -74,6 +80,7 @@ def generate_non_mainstream(topic: str) -> List[ReferenceArticle]:
             source="Independent newsletters and investigative blogs",
             summary="Check whether authors provide raw evidence, primary sources, and transparent methodology.",
             link=f"https://duckduckgo.com/?q={urllib.parse.quote(topic + ' independent analysis')}",
+            link="",
             viewpoint="Alternative viewpoint",
         ),
         ReferenceArticle(
@@ -81,6 +88,7 @@ def generate_non_mainstream(topic: str) -> List[ReferenceArticle]:
             source="Open-source intelligence communities",
             summary="Useful for chronology checks, geolocation, and media provenance verification.",
             link=f"https://duckduckgo.com/?q={urllib.parse.quote(topic + ' osint discussion')}",
+            link="",
             viewpoint="Obscure/OSINT",
         ),
         ReferenceArticle(
@@ -88,6 +96,7 @@ def generate_non_mainstream(topic: str) -> List[ReferenceArticle]:
             source="Niche forums and alternative media",
             summary="Use only with corroboration; identify where claims diverge from mainstream or primary-source evidence.",
             link=f"https://duckduckgo.com/?q={urllib.parse.quote(topic + ' alternative viewpoint')}",
+            link="",
             viewpoint="Non-mainstream/contrarian",
         ),
     ]
@@ -118,6 +127,8 @@ def find_references(topic: str) -> List[ReferenceArticle]:
     refs = wiki_refs + crossref_refs + generate_non_mainstream(topic)
     if not wiki_refs and not crossref_refs:
         refs.extend(_offline_fallback(topic))
+def find_references(topic: str) -> List[ReferenceArticle]:
+    refs = fetch_wikipedia(topic) + fetch_crossref(topic) + generate_non_mainstream(topic)
 
     deduped: List[ReferenceArticle] = []
     seen = set()

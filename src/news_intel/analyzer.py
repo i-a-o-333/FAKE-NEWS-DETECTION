@@ -17,6 +17,11 @@ VAGUE_PATTERN = re.compile(
 SPECIFIC_PATTERN = re.compile(
     r"(\b\d{1,4}(?:\.\d+)?%?\b|\b\d{4}\b|\b(january|february|march|april|may|june|"
     r"july|august|september|october|november|december)\b|\b(according to|in [A-Z][a-z]+|at [A-Z][a-z]+))",
+EVIDENCE_PATTERN = re.compile(r"\b(according to|data|study|report|source|document|records|official statement)\b", re.IGNORECASE)
+VAGUE_PATTERN = re.compile(r"\b(many|some|experts say|people say|obviously|clearly|everyone knows)\b", re.IGNORECASE)
+SPECIFIC_PATTERN = re.compile(
+    r"(\b\d{1,4}(?:\.\d+)?%?\b|\b\d{4}\b|\b(january|february|march|april|may|june|july|august|"
+    r"september|october|november|december)\b|\b(according to|in [A-Z][a-z]+|at [A-Z][a-z]+))",
     re.IGNORECASE,
 )
 
@@ -121,6 +126,7 @@ def compute_scores(claims: List[ClaimAssessment], manipulation_findings: List[st
             + (18 if intent_label in {"Political influence", "Reputation improvement (PR)"} else 8),
         )
     )
+    propaganda = int(min(95, (100 - objectivity) * 0.74 + (18 if intent_label in {"Political influence", "Reputation improvement (PR)"} else 8)))
 
     return {
         "objectivity": objectivity,
@@ -134,6 +140,10 @@ def determine_final_assessment(scores: Dict[str, int], intent_label: str) -> str
     if intent_label == "Political influence" and scores["propaganda"] >= 35:
         return "Likely propaganda"
     if intent_label == "Reputation improvement (PR)" and scores["propaganda"] >= 25:
+    # Prioritize directional-intent detection before defaulting to factual.
+    if intent_label == "Political influence" and (scores["propaganda"] >= 45 or scores["objectivity"] < 95):
+        return "Likely propaganda"
+    if intent_label == "Reputation improvement (PR)":
         return "Likely PR or reputation management"
     if scores["reliability"] >= 72 and scores["objectivity"] >= 68 and scores["propaganda"] < 45:
         return "Likely factual reporting"
